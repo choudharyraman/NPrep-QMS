@@ -1,7 +1,7 @@
 // src/pages/TicketDetailView.tsx
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTicketStore } from '../lib/ticketStore';
+import { useTicketStore, ticketStore } from '../lib/ticketStore';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { formatTimeAgo } from '../lib/mockData';
 import { ArrowLeft, Users2, ThumbsUp, ThumbsDown, Clock, CheckCircle2, MessageSquare } from 'lucide-react';
@@ -134,10 +134,19 @@ export const TicketDetailView: React.FC = () => {
               {ticket.status === 'answered' && (
                 <div className="mt-3 bg-white border border-brand-border rounded-2xl p-3 flex items-center gap-3 w-full">
                   <p className="text-xs text-brand-textMuted font-medium flex-1">Was this answer helpful?</p>
-                  <button className="flex items-center gap-1 text-xs text-emerald-600 font-semibold bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full active:scale-95 transition-transform">
+                  <button 
+                    onClick={() => ticketStore.updateStatus(ticket.id, 'resolved')}
+                    className="flex items-center gap-1 text-xs text-emerald-600 font-semibold bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+                  >
                     <ThumbsUp size={12} /> Yes
                   </button>
-                  <button className="flex items-center gap-1 text-xs text-slate-500 font-semibold bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full active:scale-95 transition-transform">
+                  <button 
+                    onClick={() => {
+                      ticketStore.updateStatus(ticket.id, 'in_progress');
+                      alert('We have notified the faculty that you need more help. They will follow up shortly.');
+                    }}
+                    className="flex items-center gap-1 text-xs text-slate-500 font-semibold bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+                  >
                     <ThumbsDown size={12} /> No
                   </button>
                 </div>
