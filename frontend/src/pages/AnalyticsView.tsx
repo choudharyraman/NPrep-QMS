@@ -62,6 +62,11 @@ export function AnalyticsView() {
     return null;
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* Anomaly Banner */}
@@ -86,10 +91,11 @@ export function AnalyticsView() {
           </div>
         </div>
         <button
-          onClick={() => { logout(); navigate('/login'); }}
-          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors text-slate-600"
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
         >
-          <LogOut size={18} />
+          <LogOut size={16} />
+          <span className="hidden sm:inline">Logout</span>
         </button>
       </header>
 

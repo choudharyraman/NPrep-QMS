@@ -4,6 +4,8 @@
 export type TicketStatus = 'pending' | 'in_progress' | 'answered' | 'resolved';
 export type UserRole = 'student' | 'faculty' | 'ops';
 
+export const PAYOUT_RATE_PER_TICKET = 15; // ₹15 per resolved doubt
+
 export const SUBJECTS = [
   'Anatomy',
   'Physiology',
@@ -152,6 +154,9 @@ export const MOCK_TICKETS: MockTicket[] = [
     topic: 'Carbohydrate Metabolism',
     text_query: "What is the significance of phosphofructokinase-1 in glycolysis? I know it's a key regulatory enzyme but don't understand how ATP inhibits it allosterically.",
     status: 'in_progress',
+    faculty_reply: "PFK-1 is the rate-limiting enzyme of glycolysis. High ATP signals that the cell has enough energy, so ATP binds to an allosteric site on PFK-1, lowering its affinity for fructose-6-phosphate. This stops unnecessary glucose breakdown.",
+    faculty_name: 'Dr. Anita Desai',
+    faculty_id: 'fac-002',
     created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
     updated_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     similar_count: 6,

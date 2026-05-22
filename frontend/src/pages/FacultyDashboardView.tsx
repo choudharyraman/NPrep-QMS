@@ -5,10 +5,7 @@ import { useTicketStore, ticketStore } from '../lib/ticketStore';
 import { MOCK_CLUSTERS, MockCluster, formatTimeAgo } from '../lib/mockData';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { notifyStudentReply } from '../lib/notifications';
-import {
-  Inbox, Search, AlertTriangle, CheckCircle2, Send,
-  LogOut, BarChart3, ChevronRight, Users2, Zap, X
-} from 'lucide-react';
+import { LayoutDashboard, Users2, Clock, CheckCircle2, ChevronRight, Inbox, LogOut, ArrowRight, Search, AlertTriangle, Send, BarChart3, Zap, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function FacultyDashboardView() {
@@ -64,8 +61,13 @@ export function FacultyDashboardView() {
     }, 2000);
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="flex h-screen bg-slate-50 font-inter overflow-hidden">
       {/* Top Bar */}
       <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-3">
@@ -77,7 +79,8 @@ export function FacultyDashboardView() {
             <p className="text-[11px] text-slate-400">{user?.name} · {user?.designation}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        
+        <div className="flex items-center gap-4">
           <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${pendingTotal > 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
             {pendingTotal} Pending
           </span>
