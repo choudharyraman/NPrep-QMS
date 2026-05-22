@@ -1,57 +1,59 @@
-import React, { useState, useEffect } from 'react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell, CartesianGrid } from 'recharts';
-import { BarChart3, AlertTriangle, TrendingUp } from 'lucide-react';
+// src/pages/AnalyticsView.tsx — Upgraded with real mock data, filters, drill-down
+import React, { useState } from 'react';
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell,
+  CartesianGrid, LineChart, Line, Area, AreaChart
+} from 'recharts';
+import { MOCK_ANALYTICS, formatTimeAgo } from '../lib/mockData';
+import { BarChart3, AlertTriangle, TrendingUp, ArrowLeft, LogOut, X, ChevronRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useTicketStore } from '../lib/ticketStore';
 
-interface TelemetryData {
-  topic: string;
-  volume: number;
-  is_anomaly: boolean;
-  subject: string;
-}
+type TimeFilter = '7d' | '30d' | 'all';
+type SubjectFilter = string | 'all';
 
 export function AnalyticsView() {
-  const [data, setData] = useState<TelemetryData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const allTickets = useTicketStore();
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('7d');
+  const [subjectFilter, setSubjectFilter] = useState<SubjectFilter>('all');
+  const [drillTopic, setDrillTopic] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Mock fetching from /api/analytics/spikes
-    const fetchTelemetry = async () => {
-      setIsLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // Mock data
-        setData([
-          { topic: 'Kinematics', volume: 12, is_anomaly: false, subject: 'Physics' },
-          { topic: 'Thermodynamics', volume: 85, is_anomaly: true, subject: 'Physics' },
-          { topic: 'Calculus', volume: 24, is_anomaly: false, subject: 'Math' },
-          { topic: 'Organic Chem', volume: 45, is_anomaly: false, subject: 'Chemistry' },
-          { topic: 'Genetics', volume: 18, is_anomaly: false, subject: 'Biology' },
-          { topic: 'Electromagnetism', volume: 8, is_anomaly: false, subject: 'Physics' }
-        ]);
-      } catch (err) {
-        console.error('Failed to fetch telemetry', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTelemetry();
-  }, []);
+  const data = MOCK_ANALYTICS.topic_volumes.filter(d =>
+    subjectFilter === 'all' || d.subject === subjectFilter
+  );
 
   const anomalies = data.filter(d => d.is_anomaly);
+  const subjects = Array.from(new Set(MOCK_ANALYTICS.topic_volumes.map(d => d.subject)));
 
-  // Custom Tooltip
+  const liveStats = {
+    total: allTickets.length,
+    pending: allTickets.filter(t => t.status === 'pending').length,
+    answered: allTickets.filter(t => t.status === 'answered' || t.status === 'resolved').length,
+    avgHours: MOCK_ANALYTICS.kpis.avg_resolution_hours,
+  };
+
+  const drillTopicData = drillTopic
+    ? MOCK_ANALYTICS.topic_volumes.find(d => d.topic === drillTopic)
+    : null;
+
+  const drillTickets = drillTopic
+    ? allTickets.filter(t => t.topic.toLowerCase().includes(drillTopic.split(' ')[0].toLowerCase())).slice(0, 4)
+    : [];
+
   const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
+    if (active && payload?.length) {
       const isAnomaly = payload[0].payload.is_anomaly;
       return (
-        <div className="bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl">
-          <p className="text-white font-bold mb-1">{label}</p>
-          <p className="text-slate-300 text-sm">Tickets: <span className="font-bold">{payload[0].value}</span></p>
+        <div className="bg-white border border-slate-200 p-3 rounded-xl shadow-xl text-sm">
+          <p className="font-bold text-slate-800 mb-1">{label}</p>
+          <p className="text-slate-600">Tickets: <span className="font-bold text-slate-900">{payload[0].value}</span></p>
+          <p className="text-slate-400 text-xs">{payload[0].payload.subject}</p>
           {isAnomaly && (
-            <p className="text-rose-400 text-xs font-bold mt-2 uppercase flex items-center gap-1">
-              <AlertTriangle size={12} /> High Volume Spike
+            <p className="text-rose-600 text-xs font-bold mt-1.5 flex items-center gap-1">
+              <AlertTriangle size={11} /> High Volume Spike
             </p>
           )}
         </div>
@@ -61,98 +63,243 @@ export function AnalyticsView() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200">
-      {/* Dynamic Alert Banner */}
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* Anomaly Banner */}
       {anomalies.length > 0 && (
-        <div className="w-full bg-rose-600 text-white p-4 font-bold flex flex-col md:flex-row items-center justify-center gap-3 shadow-[0_4px_20px_rgba(225,29,72,0.3)] z-20 relative">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="animate-pulse" />
-            <span className="uppercase tracking-wider text-sm md:text-base">Curriculum Anomaly Detected</span>
-          </div>
-          <span className="hidden md:inline px-2 opacity-50">|</span>
-          <span className="text-xs md:text-sm bg-black/20 px-3 py-1 rounded-full whitespace-nowrap">
-            {anomalies.map(a => a.topic).join(', ')} spike in queries
-          </span>
+        <div className="bg-rose-600 text-white px-6 py-2.5 flex items-center gap-3 z-20">
+          <AlertTriangle size={16} className="animate-pulse shrink-0" />
+          <p className="text-sm font-semibold">
+            🚨 Anomalies: {anomalies.map(a => a.topic).join(' · ')} — students are confused!
+          </p>
         </div>
       )}
 
-      <header className="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <BarChart3 className="text-sky-400" />
-            Curriculum Telemetry
-          </h1>
+      {/* Top Bar */}
+      <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-10">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate(-1)} className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors">
+            <ArrowLeft size={18} />
+          </button>
+          <div>
+            <h1 className="text-base font-bold text-slate-900 font-outfit">Curriculum Analytics</h1>
+            <p className="text-[11px] text-slate-400">Confusion heatmap & topic trends</p>
+          </div>
         </div>
+        <button
+          onClick={() => { logout(); navigate('/login'); }}
+          className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-colors text-slate-600"
+        >
+          <LogOut size={18} />
+        </button>
       </header>
 
-      <main className="max-w-6xl mx-auto p-4 md:p-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-            <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Volume (24h)</div>
-            <div className="text-3xl font-bold text-white">
-              {data.reduce((acc, curr) => acc + curr.volume, 0)}
+      <main className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
+        {/* KPI Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: 'Total Tickets', value: liveStats.total, color: 'text-slate-900', sub: 'All time' },
+            { label: 'Pending', value: liveStats.pending, color: 'text-amber-600', sub: 'Awaiting reply' },
+            { label: 'Answered', value: liveStats.answered, color: 'text-emerald-600', sub: 'Resolved' },
+            { label: 'Avg Resolution', value: `${liveStats.avgHours}h`, color: 'text-[#1ba1f5]', sub: 'Target < 4h' },
+          ].map(kpi => (
+            <div key={kpi.label} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+              <div className={`text-3xl font-bold font-outfit ${kpi.color}`}>{kpi.value}</div>
+              <div className="text-sm text-slate-600 font-medium">{kpi.label}</div>
+              <div className="text-xs text-slate-400 mt-0.5">{kpi.sub}</div>
             </div>
+          ))}
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Time Filter */}
+          <div className="flex gap-2">
+            {([['7d', 'Last 7 Days'], ['30d', 'Last 30 Days'], ['all', 'All Time']] as const).map(([v, l]) => (
+              <button
+                key={v}
+                onClick={() => setTimeFilter(v)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
+                  timeFilter === v ? 'bg-[#1ba1f5] text-white border-[#1ba1f5]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#1ba1f5]/40'
+                }`}
+              >
+                {l}
+              </button>
+            ))}
           </div>
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-            <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Active Anomalies</div>
-            <div className={`text-3xl font-bold ${anomalies.length > 0 ? 'text-rose-400' : 'text-emerald-400'}`}>
-              {anomalies.length}
-            </div>
-          </div>
-          <div className="bg-slate-900 border border-slate-800 p-5 rounded-xl">
-            <div className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Avg Resolution</div>
-            <div className="text-3xl font-bold text-sky-400">14m</div>
+          {/* Subject Filter */}
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar">
+            <button
+              onClick={() => setSubjectFilter('all')}
+              className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${subjectFilter === 'all' ? 'bg-[#0b163f] text-white border-[#0b163f]' : 'bg-white text-slate-500 border-slate-200'}`}
+            >
+              All Subjects
+            </button>
+            {subjects.map(s => (
+              <button
+                key={s}
+                onClick={() => setSubjectFilter(s)}
+                className={`shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${subjectFilter === s ? 'bg-[#0b163f] text-white border-[#0b163f]' : 'bg-white text-slate-500 border-slate-200'}`}
+              >
+                {s}
+              </button>
+            ))}
           </div>
         </div>
 
-        <section className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <TrendingUp className="text-indigo-400" size={20} />
-            <h2 className="text-lg font-bold text-white">Confusion Heatmap</h2>
-          </div>
-          
-          {isLoading ? (
-            <div className="h-[300px] flex items-center justify-center text-slate-500">
-              Loading telemetry...
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Confusion Heatmap */}
+          <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-5">
+              <TrendingUp size={18} className="text-indigo-500" />
+              <h2 className="text-base font-bold text-slate-800 font-outfit">Confusion Heatmap</h2>
+              <span className="text-xs text-slate-400 ml-auto">Click a bar to drill down</span>
             </div>
-          ) : (
-            <div className="h-[300px] w-full">
+            <div className="h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis 
-                    dataKey="topic" 
-                    stroke="#64748b" 
-                    fontSize={11} 
-                    tickMargin={10}
-                    tickFormatter={(val) => val.length > 10 ? val.substring(0, 10) + '...' : val}
+                <BarChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 40 }}
+                  onClick={(d) => d?.activePayload && setDrillTopic(d.activePayload[0]?.payload?.topic)}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis
+                    dataKey="topic"
+                    stroke="#94a3b8"
+                    fontSize={10}
+                    tickMargin={8}
+                    angle={-30}
+                    textAnchor="end"
+                    tickFormatter={v => v.length > 12 ? v.slice(0, 12) + '…' : v}
                   />
-                  <YAxis stroke="#64748b" fontSize={11} />
-                  <Tooltip content={<CustomTooltip />} cursor={{fill: '#1e293b'}} />
-                  <Bar dataKey="volume" radius={[4, 4, 0, 0]}>
+                  <YAxis stroke="#94a3b8" fontSize={10} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8fafc' }} />
+                  <Bar dataKey="volume" radius={[6, 6, 0, 0]} cursor="pointer">
                     {data.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.is_anomaly ? '#e11d48' : '#4f46e5'} 
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.is_anomaly ? '#e11d48' : drillTopic === entry.topic ? '#0b163f' : '#1ba1f5'}
+                        opacity={drillTopic && drillTopic !== entry.topic ? 0.4 : 1}
                       />
                     ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          )}
-          
-          <div className="mt-4 flex flex-wrap gap-4 text-xs font-medium text-slate-400 justify-center">
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
-              Standard Volume
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-rose-600"></div>
-              Spike / Anomaly
+            <div className="flex items-center gap-4 mt-2 text-xs text-slate-400 justify-center">
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#1ba1f5] inline-block" /> Normal</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-rose-600 inline-block" /> Anomaly</span>
+              <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-[#0b163f] inline-block" /> Selected</span>
             </div>
           </div>
-        </section>
+
+          {/* Drill-Down / Daily Trend */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col">
+            {drillTopicData ? (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-sm font-outfit">{drillTopicData.topic}</h3>
+                    <p className="text-xs text-slate-400">{drillTopicData.subject}</p>
+                  </div>
+                  <button onClick={() => setDrillTopic(null)} className="p-1 bg-slate-100 rounded-lg">
+                    <X size={14} className="text-slate-500" />
+                  </button>
+                </div>
+                <div className="flex gap-4 mb-4">
+                  <div className="flex-1 bg-slate-50 rounded-xl p-3 text-center border border-slate-200">
+                    <div className="text-2xl font-bold text-slate-900">{drillTopicData.volume}</div>
+                    <div className="text-[10px] text-slate-500 font-medium">Tickets</div>
+                  </div>
+                  {drillTopicData.is_anomaly && (
+                    <div className="flex-1 bg-rose-50 rounded-xl p-3 text-center border border-rose-200">
+                      <div className="text-2xl font-bold text-rose-600">⚠️</div>
+                      <div className="text-[10px] text-rose-600 font-medium">Anomaly</div>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-2">Sample Questions</p>
+                <div className="space-y-2 flex-1 overflow-y-auto">
+                  {drillTickets.length === 0 ? (
+                    <p className="text-xs text-slate-400">No live tickets for this topic</p>
+                  ) : (
+                    drillTickets.map(t => (
+                      <div key={t.id} className="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+                        <p className="text-xs text-slate-700 font-medium line-clamp-2">{t.text_query}</p>
+                        <p className="text-[10px] text-slate-400 mt-1">{t.student_name} · {formatTimeAgo(t.created_at)}</p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-4">
+                  <BarChart3 size={16} className="text-slate-500" />
+                  <h3 className="font-bold text-slate-800 text-sm font-outfit">7-Day Trend</h3>
+                </div>
+                <div className="flex-1">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={MOCK_ANALYTICS.daily_trend}>
+                      <defs>
+                        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#1ba1f5" stopOpacity={0.2} />
+                          <stop offset="95%" stopColor="#1ba1f5" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                      <XAxis dataKey="date" stroke="#94a3b8" fontSize={10} />
+                      <YAxis stroke="#94a3b8" fontSize={10} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="tickets" stroke="#1ba1f5" strokeWidth={2} fill="url(#areaGrad)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <p className="text-xs text-slate-400 text-center mt-2">Click any bar to see drill-down →</p>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Faculty Performance */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100">
+            <h2 className="font-bold text-slate-800 text-sm font-outfit">Faculty Performance</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-100">
+                  {['Faculty', 'Tickets Resolved', 'Avg Time', 'Subjects', 'Status'].map(h => (
+                    <th key={h} className="text-left px-5 py-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {MOCK_ANALYTICS.faculty_performance.map(f => (
+                  <tr key={f.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1ba1f5] to-[#0b163f] flex items-center justify-center text-xs font-bold text-white shrink-0">
+                          {f.name.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                        </div>
+                        <span className="font-semibold text-slate-800">{f.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 font-bold text-slate-700">{f.resolved}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${f.avg_time_hours <= 4 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                        {f.avg_time_hours}h
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-slate-500 text-xs">{f.subjects}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${f.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                        {f.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </main>
     </div>
   );

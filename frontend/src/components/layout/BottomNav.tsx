@@ -1,14 +1,15 @@
+// src/components/layout/BottomNav.tsx — Updated tabs for student app
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, BookOpen, PlayCircle, FileText, ShoppingCart } from 'lucide-react';
+import { Home, MessageSquare, BookOpen, PlayCircle, FileText } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
   const navItems = [
-    { name: 'Home', icon: Home, path: '/' },
+    { name: 'Home', icon: Home, path: '/home' },
+    { name: 'My Doubts', icon: MessageSquare, path: '/my-tickets' },
     { name: 'QBank', icon: BookOpen, path: '/qbank' },
     { name: 'Videos', icon: PlayCircle, path: '/videos' },
     { name: 'Tests', icon: FileText, path: '/tests' },
-    { name: 'Buy', icon: ShoppingCart, path: '/buy' },
   ];
 
   return (
@@ -20,17 +21,20 @@ export const BottomNav: React.FC = () => {
             to={item.path}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center w-full h-full space-y-1 relative transition-colors duration-200 ${
-                isActive ? 'text-brand-navy' : 'text-slate-400'
+                isActive ? 'text-[#1ba1f5]' : 'text-slate-400'
               }`
             }
           >
             {({ isActive }) => (
               <>
                 {isActive && (
-                  <div className="absolute top-0 w-8 h-1 bg-brand-navy rounded-b-md" />
+                  <div className="absolute top-0 w-8 h-0.5 bg-[#1ba1f5] rounded-b-full" />
                 )}
-                <item.icon className="w-6 h-6" strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-medium tracking-tight">
+                <item.icon
+                  className={`w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`}
+                  strokeWidth={isActive ? 2.5 : 1.8}
+                />
+                <span className={`text-[10px] font-medium tracking-tight transition-all ${isActive ? 'font-bold' : ''}`}>
                   {item.name}
                 </span>
               </>

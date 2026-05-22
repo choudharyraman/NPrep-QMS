@@ -13,7 +13,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'inline',
       devOptions: {
-        enabled: true, // Enables PWA emulation in local dev environment
+        enabled: true,
         type: 'module'
       },
       injectManifest: {
@@ -21,13 +21,14 @@ export default defineConfig({
       },
       manifest: {
         name: 'NPrep QMS',
-        short_name: 'NPrepQMS',
-        description: 'Offline-First Ticket Management System for NPrep',
-        theme_color: '#0f172a',
-        background_color: '#0f172a',
+        short_name: 'NPrep QMS',
+        description: 'AI-powered Doubt Management System for NPrep — ask questions, get expert faculty answers fast.',
+        theme_color: '#1ba1f5',
+        background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '/',
+        scope: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
@@ -49,13 +50,21 @@ export default defineConfig({
       }
     })
   ],
+  // Dev server config — only used locally, NOT on Vercel
   server: {
     port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        secure: false
+  },
+  build: {
+    // Generate source maps for easier debugging on Vercel
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        // Manual chunks to reduce bundle size warning
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'charts': ['recharts'],
+          'dexie': ['dexie', 'dexie-react-hooks'],
+        }
       }
     }
   }

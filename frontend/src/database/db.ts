@@ -1,31 +1,37 @@
 import Dexie, { type Table } from 'dexie';
 
-// 1. Define TypeScript Interface matching backend schema
+// Updated to match all fields used by SmartSubmitModal and TicketStore
+export type TicketStatus = 'pending' | 'in_progress' | 'answered' | 'resolved';
+
 export interface Ticket {
-  id: string;             // Client-generated UUID (Primary Key, non-incremental for backend sync)
-  student_id: string;     // Student ID related to the ticket
-  subject: string;        // Ticket subject
-  topic: string;          // Topic of discussion
-  status: 'open' | 'in_progress' | 'resolved';
-  updated_at: number;     // Unix timestamp (milliseconds) of last edit
-  dirty: number;          // Binary flag: 1 if offline creation/edit is pending sync; 0 if synced
-  deleted: number;        // Binary flag: 1 if soft-deleted offline (to push to backend); 0 otherwise
+  id: string;
+  student_id: string;
+  student_name?: string;
+  subject: string;
+  topic: string;
+  text_query?: string;
+  image_url?: string;
+  status: TicketStatus;
+  faculty_reply?: string;
+  faculty_name?: string;
+  faculty_id?: string;
+  created_at: string;
+  updated_at?: string;
+  dirty?: number;
+  deleted?: number;
+  similar_count?: number;
+  cluster_id?: string;
 }
 
-// 2. Initialize Dexie Database Class
 export class QMSDatabase extends Dexie {
-  tickets!: Table<Ticket, string>; // Primary key is a string (UUID)
+  tickets!: Table<Ticket, string>;
 
   constructor() {
     super('QMSDatabase');
-    
-    // Define IndexedDB stores and indices.
-    // Specifying id (not ++id) as primary key since UUIDs are generated in the application client-side.
-    this.version(1).stores({
-      tickets: 'id, student_id, subject, topic, status, updated_at, dirty, deleted'
+    this.version(2).stores({
+      tickets: 'id, student_id, subject, topic, status, created_at, dirty, deleted, cluster_id, faculty_id'
     });
   }
 }
 
-// 3. Export global singleton instance of db
 export const db = new QMSDatabase();
