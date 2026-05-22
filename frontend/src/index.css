@@ -2,49 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom layout behaviors to enhance premium, native-app feel */
 @layer base {
   body {
-    @apply h-full bg-slate-900 text-slate-100 antialiased font-sans select-none;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-outfit font-semibold;
+    @apply bg-brand-bg text-brand-textMain font-sans antialiased overflow-x-hidden;
   }
 }
 
-/* Custom premium scrollbar for seamless desktop and mobile viewports */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+/* Hide scrollbar for horizontal scrolling elements like pills */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-::-webkit-scrollbar-track {
-  @apply bg-slate-900;
-}
-
-::-webkit-scrollbar-thumb {
-  @apply bg-slate-700 rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-500;
-}
-
-/* Premium pulse and spin overrides for custom loading indicator UX */
-.pulse-custom {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: .7;
-    transform: scale(0.97);
-  }
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

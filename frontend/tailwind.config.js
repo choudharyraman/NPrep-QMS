@@ -7,18 +7,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        slate: {
-          950: '#030712',
-          900: '#0f172a', // Sleek slate dark background
-          800: '#1e293b',
-          700: '#334155',
-          600: '#475569',
-          500: '#64748b',
-          400: '#94a3b8',
-          300: '#cbd5e1',
-          200: '#e2e8f0',
-          100: '#f1f5f9',
-          50: '#f8fafc',
+        brand: {
+          blue: '#1ba1f5', // Primary active blue
+          navy: '#0b163f', // Dark bottom nav active border
+          bg: '#fcfcfc', // Light app background
+          card: '#ffffff', // Card background
+          textMain: '#1e293b',
+          textMuted: '#64748b',
+          border: '#e2e8f0',
         }
       },
       fontFamily: {

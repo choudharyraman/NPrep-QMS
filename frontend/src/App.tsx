@@ -1,48 +1,38 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { StudentSubmitView } from './pages/StudentSubmitView';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { MobileLayout } from './components/layout/MobileLayout';
+import { QBankView } from './pages/QBankView';
+import { TestsView } from './pages/TestsView';
 import { FacultyDashboardView } from './pages/FacultyDashboardView';
 import { AdminSettingsView } from './pages/AdminSettingsView';
 import { AnalyticsView } from './pages/AnalyticsView';
 
-// Simple Navigation Layout for demo purposes
-const Layout = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
-  
-  return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
-      <nav className="bg-slate-900 border-b border-slate-800 p-2 flex justify-center gap-4 text-xs font-medium sticky top-0 z-50">
-        <Link to="/" className={`px-3 py-1.5 rounded-lg transition-colors ${location.pathname === '/' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-          Student
-        </Link>
-        <Link to="/faculty" className={`px-3 py-1.5 rounded-lg transition-colors ${location.pathname === '/faculty' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-          Faculty
-        </Link>
-        <Link to="/admin" className={`px-3 py-1.5 rounded-lg transition-colors ${location.pathname === '/admin' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-          Admin
-        </Link>
-        <Link to="/analytics" className={`px-3 py-1.5 rounded-lg transition-colors ${location.pathname === '/analytics' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
-          Analytics
-        </Link>
-      </nav>
-      <div className="flex-1">
-        {children}
-      </div>
-    </div>
-  );
-};
+// Temporary placeholder for unimplemented tabs
+const PlaceholderView: React.FC<{ title: string }> = ({ title }) => (
+  <div className="flex items-center justify-center h-full">
+    <h2 className="text-xl font-bold text-brand-textMuted">{title} Coming Soon</h2>
+  </div>
+);
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<StudentSubmitView />} />
-          <Route path="/faculty" element={<FacultyDashboardView />} />
-          <Route path="/admin" element={<AdminSettingsView />} />
-          <Route path="/analytics" element={<AnalyticsView />} />
-        </Routes>
-      </Layout>
+      <Routes>
+        {/* Student Mobile Routes (wrapped in MobileLayout) */}
+        <Route path="/" element={<MobileLayout><PlaceholderView title="Home" /></MobileLayout>} />
+        <Route path="/qbank" element={<MobileLayout><QBankView /></MobileLayout>} />
+        <Route path="/tests" element={<MobileLayout><TestsView /></MobileLayout>} />
+        <Route path="/videos" element={<MobileLayout><PlaceholderView title="Videos" /></MobileLayout>} />
+        <Route path="/buy" element={<MobileLayout><PlaceholderView title="Store" /></MobileLayout>} />
+        
+        {/* Internal Ops Routes (No bottom nav) */}
+        <Route path="/faculty" element={<FacultyDashboardView />} />
+        <Route path="/admin" element={<AdminSettingsView />} />
+        <Route path="/analytics" element={<AnalyticsView />} />
+        
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/qbank" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
