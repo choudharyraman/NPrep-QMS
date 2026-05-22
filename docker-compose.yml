@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  db:
+    image: pgvector/pgvector:16-pg16
+    container_name: nprep_qms_db
+    environment:
+      POSTGRES_USER: nprep_user
+      POSTGRES_PASSWORD: nprep_password
+      POSTGRES_DB: nprep_qms
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nprep_user -d nprep_qms"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nprep_qms_backend
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://nprep_user:nprep_password@db:5432/nprep_qms
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local
+

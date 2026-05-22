@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/pwa-192x192.png" />
+    
+    <!-- Viewport configuration to lock scaling, matching native app feels -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- Apple Mobile Web App status bar and compatibility flags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="NPrep QMS" />
+    
+    <title>NPrep QMS - Offline-First Ticket System</title>
+    
+    <!-- Prefetch and link premium typography fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body class="h-full overflow-hidden select-none touch-none antialiased">
+    <div id="root" class="h-full w-full overflow-y-auto"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
