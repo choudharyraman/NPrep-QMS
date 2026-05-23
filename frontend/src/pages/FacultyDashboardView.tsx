@@ -67,7 +67,7 @@ export function FacultyDashboardView() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 font-inter overflow-hidden">
+    <div className="flex flex-col h-screen bg-slate-50 font-inter overflow-hidden">
       {/* Top Bar */}
       <header className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-3">
@@ -111,7 +111,7 @@ export function FacultyDashboardView() {
         </div>
       )}
 
-      <div className="flex-1 flex overflow-hidden h-[calc(100vh-73px)]">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* LEFT PANE — Cluster List */}
         <aside className={`${selectedClusterId ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-[380px] border-r border-slate-200 bg-white overflow-y-auto shrink-0`}>
           {/* Search + Filters */}
