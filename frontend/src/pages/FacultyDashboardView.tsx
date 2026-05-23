@@ -5,7 +5,7 @@ import { useTicketStore, ticketStore } from '../lib/ticketStore';
 import { MOCK_CLUSTERS, MockCluster, formatTimeAgo } from '../lib/mockData';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { notifyStudentReply } from '../lib/notifications';
-import { LayoutDashboard, Users2, Clock, CheckCircle2, ChevronRight, Inbox, LogOut, ArrowRight, Search, AlertTriangle, Send, BarChart3, Zap, X } from 'lucide-react';
+import { LayoutDashboard, Users2, Clock, CheckCircle2, ChevronRight, Inbox, LogOut, ArrowRight, Search, AlertTriangle, Send, BarChart3, Zap, X, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function FacultyDashboardView() {
@@ -69,7 +69,7 @@ export function FacultyDashboardView() {
   return (
     <div className="flex h-screen bg-slate-50 font-inter overflow-hidden">
       {/* Top Bar */}
-      <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between sticky top-0 z-20">
+      <header className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 flex items-center justify-between sticky top-0 z-20">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0b163f] to-[#1ba1f5] flex items-center justify-center">
             <Inbox size={16} className="text-white" />
@@ -103,10 +103,10 @@ export function FacultyDashboardView() {
 
       {/* Anomaly Alert */}
       {MOCK_CLUSTERS.some(c => c.is_anomaly) && (
-        <div className="bg-rose-600 text-white px-6 py-2.5 flex items-center gap-3">
+        <div className="bg-rose-600 text-white px-4 md:px-6 py-2.5 flex items-center gap-3">
           <AlertTriangle size={16} className="animate-pulse shrink-0" />
-          <p className="text-sm font-semibold">
-            High-volume spike detected: {MOCK_CLUSTERS.filter(c => c.is_anomaly).map(c => c.topic).join(' · ')}
+          <p className="text-sm font-semibold truncate">
+            High-volume spike: {MOCK_CLUSTERS.filter(c => c.is_anomaly).map(c => c.topic).join(' · ')}
           </p>
         </div>
       )}
@@ -199,14 +199,14 @@ export function FacultyDashboardView() {
           {selectedCluster && representativeTicket ? (
             <>
               {/* Panel Header */}
-              <div className="bg-white border-b border-slate-200 p-6">
+              <div className="bg-white border-b border-slate-200 p-4 md:p-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <button
                       onClick={() => setSelectedClusterId(null)}
-                      className="md:hidden flex items-center gap-1 text-[#1ba1f5] text-sm font-semibold mb-3"
+                      className="md:hidden flex items-center gap-1.5 text-[#1ba1f5] text-sm font-bold mb-4"
                     >
-                      <X size={14} /> Close
+                      <ArrowLeft size={16} /> Back to Inbox
                     </button>
                     <div className="flex gap-2 items-center mb-2">
                       <span className="text-xs bg-blue-50 text-[#1ba1f5] px-2.5 py-1 rounded-full font-bold border border-blue-100">
@@ -245,7 +245,7 @@ export function FacultyDashboardView() {
               </div>
 
               {/* Student Queries Panel */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
                 <div>
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
                     Active Questions in This Cluster ({selectedClusterTickets.length})
@@ -273,7 +273,7 @@ export function FacultyDashboardView() {
               </div>
 
               {/* Reply Editor (bottom, sticky) */}
-              <div className="bg-white border-t border-slate-200 p-6">
+              <div className="bg-white border-t border-slate-200 p-4 md:p-6 pb-safe">
                 {sentClusterId === selectedCluster.cluster_id ? (
                   <div className="flex items-center gap-3 text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
                     <CheckCircle2 size={20} />
@@ -310,7 +310,8 @@ export function FacultyDashboardView() {
                         ) : (
                           <>
                             <Send size={16} />
-                            Send Reply to All {selectedClusterTickets.length} Students
+                            <span className="hidden sm:inline">Send Reply to All {selectedClusterTickets.length} Students</span>
+                            <span className="sm:hidden">Send Reply ({selectedClusterTickets.length})</span>
                           </>
                         )}
                       </button>
