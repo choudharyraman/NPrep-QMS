@@ -39,7 +39,19 @@ export const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0b163f] via-[#0e2060] to-[#1a3a80] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-[#0b163f] via-[#0e2060] to-[#1a3a80] flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Top Floating Guide Banner */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md z-50 animate-in fade-in slide-in-from-top-4 duration-700">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl p-3.5 flex items-start gap-3">
+          <div className="bg-white/20 p-2 rounded-xl shrink-0">
+            <BookOpen size={18} className="text-blue-100" />
+          </div>
+          <p className="text-[13px] text-blue-50 leading-relaxed pt-0.5">
+            <strong className="text-white">Demo Guide:</strong> Click <strong>Student</strong>, <strong>Faculty</strong>, or <strong>Ops</strong> below to auto-fill credentials, then click <strong>Sign In</strong> to explore.
+          </p>
+        </div>
+      </div>
+
       {/* Decorative background blobs */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-[#1ba1f5]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#1ba1f5]/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
